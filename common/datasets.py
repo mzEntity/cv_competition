@@ -3,21 +3,23 @@ from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 import os
 from torchvision import transforms
+import random
 
 class CustomDataset(Dataset):
-    def __init__(self, root_dir, train=True, transform=None):
+    def __init__(self, root_dir, mode, transform=None):
         """
         Args:
             root_dir (string): 项目根目录。
+            mode (string): 模式，包含train, validate, test
             transform (callable, optional): 可选的转换操作。
         """
         self.root_dir = root_dir
         self.transform = transform
         
-        self.annotation_path = os.path.join(root_dir, f'data/annotations/{"train" if train else "val"}.txt')
-        self.img_path_dir = os.path.join(root_dir, f'data/{"train" if train else "val"}set')
+        self.annotation_path = os.path.join(root_dir, f'data/annotations/{"val" if mode == "test" else "train"}.txt')
+        self.img_path_dir = os.path.join(root_dir, f'data/{"val" if mode == "test" else "train"}set')
         
-        self.samples = self.get_annotations(self.annotation_path)
+        self.samples = self.get_annotations(mode, self.annotation_path)
 
     def __len__(self):
         return len(self.samples)
@@ -33,13 +35,24 @@ class CustomDataset(Dataset):
 
         return image, label
 
-    def get_annotations(self, annotation_path):
+    def get_annotations(self, mode, annotation_path):
         image_labels = []
         with open(annotation_path, 'r') as file:
             for line in file:
                 img_name, label = line.strip().split()
                 image_labels.append((img_name, int(label)))
+                
+        count = len(image_labels)
+        if mode == "validate":
+            image_labels = image_labels[:count//10]
+        elif mode == "train":
+            image_labels = image_labels[count//10:]
+            
         return image_labels
+    
+def get_dataset(root_dir, mode):
+    dataset = CustomDataset(root_dir, mode, None)
+    return dataset
     
     
 if __name__ == "__main__":
