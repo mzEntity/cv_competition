@@ -1,1 +1,4 @@
 data/*
+save/*
+output.txt
+__pycache__/
