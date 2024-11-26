@@ -3,7 +3,11 @@ from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 import os
 from torchvision import transforms
-import random
+import numpy as np
+import matplotlib.pyplot as plt
+import torchvision
+from torchvision.transforms import ToTensor
+
 
 class CustomDataset(Dataset):
     def __init__(self, root_dir, mode, transform=None):
@@ -13,6 +17,12 @@ class CustomDataset(Dataset):
             mode (string): 模式，包含train, validate, test
             transform (callable, optional): 可选的转换操作。
         """
+        if transform is None:
+            transform = transforms.Compose([
+                transforms.Resize((128, 128)),
+                transforms.ToTensor(),
+            ])
+            
         self.root_dir = root_dir
         self.transform = transform
         
@@ -32,8 +42,8 @@ class CustomDataset(Dataset):
 
         if self.transform:
             image = self.transform(image)
-
-        return image, label
+            
+        return (img_name, image), label
 
     def get_annotations(self, mode, annotation_path):
         image_labels = []
@@ -43,17 +53,29 @@ class CustomDataset(Dataset):
                 image_labels.append((img_name, int(label)))
                 
         count = len(image_labels)
+        count = 100
         if mode == "validate":
             image_labels = image_labels[:count//10]
         elif mode == "train":
-            image_labels = image_labels[count//10:]
+            image_labels = image_labels[count//10:count]
             
         return image_labels
     
 def get_dataset(root_dir, mode):
-    dataset = CustomDataset(root_dir, mode, None)
+    transform = transforms.Compose([
+        transforms.Resize((128, 128)),
+        transforms.ToTensor(),
+    ])
+    
+    dataset = CustomDataset(root_dir, mode, transform)
     return dataset
     
+    
+def imshow(img):
+    img = img / 2 + 0.5
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg,(1, 2, 0)))
+    plt.show()
     
 if __name__ == "__main__":
     # 定义转换
@@ -66,11 +88,20 @@ if __name__ == "__main__":
     root_dir = 'D://fudan//2024Autumn//CV//competition//cv_competition'
 
     # 创建数据集和数据加载器
-    dataset = CustomDataset(root_dir=root_dir, train=True, transform=transform)
+    dataset = CustomDataset(root_dir=root_dir, mode="train", transform=transform)
     dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     # 遍历数据并打印图像和标签的形状
-    for images, labels in dataloader:
+    for (names, images), labels in dataloader:
         print(f'Batch of images shape: {images.shape}')  # 打印图像的形状
+        print(f'Batch of image names: {names}')  # 打印标签
         print(f'Batch of labels: {labels}')  # 打印标签
         break  # 只打印一个批次的数据以进行测试
+    
+    # get some random training images
+    dataiter = iter(dataloader)
+    (names, images), labels = next(dataiter)
+    
+    imshow(torchvision.utils.make_grid(images))
+    # print labels
+    print('Labels:\n', '\n'.join('%20s: %3d;' % (names[j], labels[j]) for j in range(32)))
