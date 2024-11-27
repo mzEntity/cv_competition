@@ -61,15 +61,17 @@ def train(device, train_loader, validate_loader, model, optimizer, criterion, ma
         avg_validate_loss = validate_loss / len(validate_loader)
         print(f"Validation Loss: {avg_validate_loss:.4f}")
 
+        is_best = False
         # Check for improvement
         if avg_validate_loss < best_loss:
             print("Validation loss improved, saving model...")
+            is_best = True
             best_loss = avg_validate_loss
             patience_counter = 0
-            save_checkpoint(model.state_dict(), save_path, epoch)
         else:
             patience_counter += 1
-
+        save_checkpoint(model.state_dict(), save_path, is_best, epoch)
+        
         # Early stopping
         if patience_counter >= patience:
             print("Early stopping triggered. Best validation loss:", best_loss)
@@ -79,11 +81,14 @@ def train(device, train_loader, validate_loader, model, optimizer, criterion, ma
 
 
 
-def save_checkpoint(state, save_root, epoch):
+def save_checkpoint(state, save_root, is_best, epoch):
     if not os.path.exists(save_root):
         os.makedirs(save_root)
     save_path = os.path.join(save_root, 'epoch_{}.pth.tar'.format(str(epoch)))
     torch.save(state, save_path)
+    
+    best_path = os.path.join(save_root, 'best_model.pth.tar'.format(str(epoch)))
+    torch.save(state, best_path)
 
 if __name__ == "__main__":
     print("Start...")

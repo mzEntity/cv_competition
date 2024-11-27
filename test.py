@@ -29,8 +29,8 @@ def test(device, test_loader, model, criterion):
                 # Forward pass
                 outputs = model(images).squeeze(1)  # Ensure outputs are 1D
                 
-                for i in range(32):
-                    file.write(f"{names[i]}\t{outputs[i]}\n")
+                for i, name in enumerate(names):
+                    file.write(f"{name}\t{round(outputs[i].item())}\n")
                 
                 loss = criterion(outputs, labels)
 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     model = MyModel()
 
     # 2. 加载模型权重
-    model_path = os.path.join(root_dir, "save/epoch_0.pth.tar")  # 模型保存路径
+    model_path = os.path.join(root_dir, "save/best_model.pth.tar")  # 模型保存路径
     model.load_state_dict(torch.load(model_path))  # 加载权重到模型
     model.to(device)
     
