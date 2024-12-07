@@ -2,3 +2,4 @@ data/*
 save/*
 output.txt
 __pycache__/
+.idea/
