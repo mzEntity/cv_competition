@@ -19,7 +19,7 @@ class CustomDataset(Dataset):
         """
         if transform is None:
             transform = transforms.Compose([
-                transforms.Resize((128, 128)),
+                transforms.Resize((224, 224)),
                 transforms.ToTensor(),
             ])
             
@@ -53,7 +53,7 @@ class CustomDataset(Dataset):
                 image_labels.append((img_name, int(label)))
                 
         count = len(image_labels)
-        count = 100
+        # count = 100
         if mode == "validate":
             image_labels = image_labels[:count//10]
         elif mode == "train":
@@ -63,7 +63,7 @@ class CustomDataset(Dataset):
     
 def get_dataset(root_dir, mode):
     transform = transforms.Compose([
-        transforms.Resize((128, 128)),
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
     ])
     
@@ -80,7 +80,7 @@ def imshow(img):
 if __name__ == "__main__":
     # 定义转换
     transform = transforms.Compose([
-        transforms.Resize((128, 128)),
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
     ])
 

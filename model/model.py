@@ -1,4 +1,6 @@
+import torch
 import torch.nn as nn
+import torchvision.models as models
 
 class MyModel(nn.Module):
     def __init__(self):
@@ -13,7 +15,7 @@ class MyModel(nn.Module):
         )
         self.fc_layers = nn.Sequential(
             nn.Flatten(),                                         # 展平
-            nn.Linear(64 * 32 * 32, 128),                        # 全连接层
+            nn.Linear(64 * 56 * 56, 128),                        # 全连接层
             nn.ReLU(),
             nn.Linear(128, 1)                                    # 最终输出单个值（预测年龄）
         )
@@ -21,4 +23,43 @@ class MyModel(nn.Module):
     def forward(self, x):
         x = self.conv_layers(x)
         x = self.fc_layers(x)
+        return x
+    
+    
+class MyResNetModel(nn.Module):
+    def __init__(self):
+        super(MyResNetModel, self).__init__()
+        resnet = models.resnet50(pretrained=True)
+
+        for param in resnet.parameters():
+            param.requires_grad = False
+
+        self.resnet = nn.Sequential(*list(resnet.children())[:-1])
+        self.fc = nn.Linear(resnet.fc.in_features, 1)
+
+    def forward(self, x):
+        x = self.resnet(x)
+        x = torch.flatten(x, 1)
+        x = self.fc(x)
+        return x
+    
+    
+class MyResNetModel2(nn.Module):
+    def __init__(self):
+        super(MyResNetModel2, self).__init__()
+        resnet = models.resnet50(pretrained=True)
+
+        for param in resnet.parameters():
+            param.requires_grad = False
+            
+        for param in resnet.layer4.parameters():
+            param.requires_grad = True
+
+        self.resnet = nn.Sequential(*list(resnet.children())[:-1])
+        self.fc = nn.Linear(resnet.fc.in_features, 1)
+
+    def forward(self, x):
+        x = self.resnet(x)
+        x = torch.flatten(x, 1)
+        x = self.fc(x)
         return x

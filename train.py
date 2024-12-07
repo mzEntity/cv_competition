@@ -2,9 +2,11 @@ import torch
 import time
 import os
 import shutil
-from model.model import MyModel
+from model.model import MyModel, MyResNetModel, MyResNetModel2
 from common.datasets import get_dataset
 import torch.optim as optim
+
+from tqdm import tqdm
 
 def train(device, train_loader, validate_loader, model, optimizer, criterion, max_epochs, save_path):
     """
@@ -29,7 +31,7 @@ def train(device, train_loader, validate_loader, model, optimizer, criterion, ma
         running_loss = 0.0
 
         # Training loop
-        for (names, images), labels in train_loader:
+        for (names, images), labels in tqdm(train_loader, desc="Epoch_" + str(epoch) + " Train Processing:"):
             images, labels = images.to(device), labels.to(device).float()
 
             # Forward pass
@@ -96,7 +98,7 @@ if __name__ == "__main__":
     batch_size = 32
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = MyModel().to(device)
+    model = MyResNetModel2().to(device)
 
     criterion = torch.nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)

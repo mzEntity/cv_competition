@@ -1,7 +1,8 @@
 import torch
-from model.model import MyModel
+from model.model import MyModel, MyResNetModel, MyResNetModel2
 from common.datasets import get_dataset
 import os
+from tqdm import tqdm
 
 def test(device, test_loader, model, criterion):
     """
@@ -23,7 +24,7 @@ def test(device, test_loader, model, criterion):
 
     with torch.no_grad():  # No need to track gradients during testing
         with open('output.txt', 'w', encoding='utf-8') as file:
-            for (names, images), labels in test_loader:
+            for (names, images), labels in tqdm(test_loader, desc="Eval Processing:"):
                 images, labels = images.to(device), labels.to(device).float()
 
                 # Forward pass
@@ -54,7 +55,7 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     root_dir = 'D://fudan//2024Autumn//CV//competition//cv_competition'
     batch_size = 32
-    model = MyModel()
+    model = MyResNetModel2()
 
     # 2. 加载模型权重
     model_path = os.path.join(root_dir, "save/best_model.pth.tar")  # 模型保存路径
