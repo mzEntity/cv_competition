@@ -37,13 +37,19 @@ class DualModel(nn.Module):
         
         
     def forward(self, is_face, x):
-        is_body = ~is_face
-        face_outputs = self.face(x[is_face])
-        body_outputs = self.body(x[is_body])
+        batch_size = x.size(0)
+        outputs = torch.zeros(batch_size, dtype=torch.float, device=x.device)
         
-        outputs = torch.zeros_like(x[:, 0], dtype=torch.float)
-        outputs[is_face] = face_outputs
-        outputs[is_body] = body_outputs
+        face_mask = is_face
+        body_mask = ~is_face
+        
+        if face_mask.any():
+            face_out = self.face(x[face_mask])
+            outputs[face_mask] = face_out.view(-1)
+        
+        if body_mask.any():
+            body_out = self.body(x[body_mask])
+            outputs[body_mask] = body_out.view(-1)
         
         return outputs
     
