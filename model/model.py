@@ -34,17 +34,17 @@ class DualModel(nn.Module):
         
         self.body.load_state_dict(torch.load(body_model_path))
         self.face.load_state_dict(torch.load(face_model_path))
-        
-        
+
+
     def forward(self, is_face, x):
         is_body = ~is_face
         face_outputs = self.face(x[is_face])
         body_outputs = self.body(x[is_body])
-        
+
         outputs = torch.zeros_like(x[:, 0], dtype=torch.float)
         outputs[is_face] = face_outputs
         outputs[is_body] = body_outputs
-        
+
         return outputs
     
     
