@@ -99,7 +99,7 @@ def dualTest(device, test_loader, model, criterion):
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    root_dir = 'D://fudan//2024Autumn//CV//competition//cv_competition'
+    root_dir = 'E:\Deep_learning\cv_competition'
     batch_size = 32
     
     # model = MyResNetModel2()
@@ -120,5 +120,5 @@ if __name__ == "__main__":
     criterion = torch.nn.MSELoss()
     
     # 调用测试函数
-    avg_test_loss, avg_mae = test(device, test_loader, model, criterion)
+    avg_test_loss, avg_mae = dualTest(device, test_loader, model, criterion)
     print(avg_test_loss, avg_mae)    

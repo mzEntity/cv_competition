@@ -34,8 +34,8 @@ class DualModel(nn.Module):
         
         self.body.load_state_dict(torch.load(body_model_path))
         self.face.load_state_dict(torch.load(face_model_path))
-        
-        
+
+
     def forward(self, is_face, x):
         batch_size = x.size(0)
         outputs = torch.zeros(batch_size, dtype=torch.float, device=x.device)
