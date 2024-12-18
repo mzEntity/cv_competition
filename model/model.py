@@ -47,8 +47,9 @@ class MyResNetModel(nn.Module):
 class MyResNetModel2(nn.Module):
     def __init__(self):
         super(MyResNetModel2, self).__init__()
+        
         resnet = models.resnet50(pretrained=True)
-
+        
         for param in resnet.parameters():
             param.requires_grad = False
             
@@ -56,6 +57,7 @@ class MyResNetModel2(nn.Module):
             param.requires_grad = True
 
         self.resnet = nn.Sequential(*list(resnet.children())[:-1])
+        # 将最后的分类层换成回归层
         self.fc = nn.Linear(resnet.fc.in_features, 1)
 
     def forward(self, x):
@@ -63,3 +65,48 @@ class MyResNetModel2(nn.Module):
         x = torch.flatten(x, 1)
         x = self.fc(x)
         return x
+
+
+class MyEfficientNetModel(nn.Module):
+    def __init__(self):
+        super(MyEfficientNetModel, self).__init__()
+
+        efficientnet = models.efficientnet_b0(pretrained=True)
+        for param in efficientnet.parameters():
+            param.requires_grad = False
+
+        self.efficientnet = nn.Sequential(*list(efficientnet.children())[:-1])
+        self.fc = nn.Linear(efficientnet.classifier[1].in_features, 1)
+
+    def forward(self, x):
+        x = self.efficientnet(x)
+
+        x = torch.flatten(x, 1)
+        x = self.fc(x)
+        return x
+    
+    
+class MyVGGModel(nn.Module):
+    def __init__(self):
+        super(MyVGGModel, self).__init__()
+        vgg = models.vgg16(pretrained=True)
+
+        self.vgg = nn.Sequential(*list(vgg.features.children()))
+        
+        for param in self.vgg.parameters():
+            param.requires_grad = False
+
+        with torch.no_grad():
+            sample_input = torch.randn(1, 3, 224, 224)  # 示例输入
+            sample_output = self.vgg(sample_input)
+            flat_size = sample_output.view(sample_output.size(0), -1).size(1)
+
+        self.fc = nn.Linear(flat_size, 1)
+
+    def forward(self, x):
+        x = self.vgg(x)
+
+        x = torch.flatten(x, 1)
+        x = self.fc(x)
+        return x
+    
