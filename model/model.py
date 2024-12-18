@@ -37,10 +37,15 @@ class DualModel(nn.Module):
         
         
     def forward(self, is_face, x):
-        if is_face:
-            return self.face(x)
-        else:
-            return self.body(x)
+        is_body = ~is_face
+        face_outputs = self.face(x[is_face])
+        body_outputs = self.body(x[is_body])
+        
+        outputs = torch.zeros_like(x[:, 0], dtype=torch.float)
+        outputs[is_face] = face_outputs
+        outputs[is_body] = body_outputs
+        
+        return outputs
     
     
 class MyResNetModel(nn.Module):
