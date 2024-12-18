@@ -61,6 +61,58 @@ class CustomDataset(Dataset):
             
         return image_labels
     
+    
+class DualCustomDataset(Dataset):
+    def __init__(self, root_dir, transform=None):
+        """
+        Args:
+            root_dir (string): 项目根目录。
+            mode (string): 模式，包含train, validate, test
+            transform (callable, optional): 可选的转换操作。
+        """
+        if transform is None:
+            transform = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+            ])
+            
+        self.root_dir = root_dir
+        self.transform = transform
+        
+        self.annotation_path = os.path.join(root_dir, "data/annotations/val.txt")
+        self.body_path_dir = os.path.join(root_dir, "data/valset_miss")
+        self.face_path_dir = os.path.join(root_dir, "data/valset_save")
+        
+        self.samples = self.get_annotations(self.annotation_path)
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        img_name, label = self.samples[idx]
+        img_path = os.path.join(self.face_path_dir, img_name).replace("*", "_")
+        is_face = True
+        
+        if not os.path.exists(img_path):
+            img_path = os.path.join(self.body_path_dir, img_name).replace("*", "_")
+            is_face = False
+        
+        image = Image.open(img_path)
+
+        if self.transform:
+            image = self.transform(image)
+            
+        return (img_name, is_face, image), label
+
+    def get_annotations(self, annotation_path):
+        image_labels = []
+        with open(annotation_path, 'r') as file:
+            for line in file:
+                img_name, label = line.strip().split()
+                image_labels.append((img_name, int(label)))
+            
+        return image_labels
+    
 def get_dataset(root_dir, mode):
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -70,6 +122,14 @@ def get_dataset(root_dir, mode):
     dataset = CustomDataset(root_dir, mode, transform)
     return dataset
     
+def get_dualDataset(root_dir):
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+    ])
+    
+    dataset = DualCustomDataset(root_dir, transform)
+    return dataset
     
 def imshow(img):
     img = img / 2 + 0.5

@@ -25,6 +25,23 @@ class MyModel(nn.Module):
         x = self.fc_layers(x)
         return x
     
+class DualModel(nn.Module):
+    def __init__(self, body_model_path, face_model_path):
+        super(DualModel, self).__init__()
+        
+        self.body = MyResNetModel2()
+        self.face = MyResNetModel2()
+        
+        self.body.load_state_dict(torch.load(body_model_path))
+        self.face.load_state_dict(torch.load(face_model_path))
+        
+        
+    def forward(self, is_face, x):
+        if is_face:
+            return self.face(x)
+        else:
+            return self.body(x)
+    
     
 class MyResNetModel(nn.Module):
     def __init__(self):

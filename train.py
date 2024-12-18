@@ -2,8 +2,8 @@ import torch
 import time
 import os
 import shutil
-from model.model import MyModel, MyResNetModel, MyResNetModel2
-from common.datasets import get_dataset
+from model.model import MyModel, MyResNetModel, MyResNetModel2, DualModel
+from common.datasets import get_dataset, get_dualDataset
 import torch.optim as optim
 
 from tqdm import tqdm
@@ -91,6 +91,9 @@ def save_checkpoint(state, save_root, is_best, epoch):
     
     best_path = os.path.join(save_root, 'best_model.pth.tar'.format(str(epoch)))
     torch.save(state, best_path)
+    
+
+
 
 if __name__ == "__main__":
     print("Start...")
@@ -99,6 +102,8 @@ if __name__ == "__main__":
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = MyResNetModel2().to(device)
+    
+    
 
     criterion = torch.nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
