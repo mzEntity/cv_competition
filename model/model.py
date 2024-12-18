@@ -38,20 +38,25 @@ class DualModel(nn.Module):
 
     def forward(self, is_face, x):
         batch_size = x.size(0)
-        outputs = torch.zeros(batch_size, dtype=torch.float, device=x.device)
+        outputs = torch.zeros(batch_size, 1, dtype=torch.float, device=x.device)  # 初始化为 [batch_size, 1]
         
         face_mask = is_face
         body_mask = ~is_face
         
         if face_mask.any():
-            face_out = self.face(x[face_mask])
-            outputs[face_mask] = face_out.view(-1)
+            face_out = self.face(x[face_mask])  # 确保输出是 [batch_size_face, 1]
+            if face_out.dim() == 1:  # 如果模型输出为 [batch_size_face]，则添加维度
+                face_out = face_out.unsqueeze(1)
+            outputs[face_mask] = face_out  # 赋值到 [batch_size, 1]
         
         if body_mask.any():
-            body_out = self.body(x[body_mask])
-            outputs[body_mask] = body_out.view(-1)
+            body_out = self.body(x[body_mask])  # 确保输出是 [batch_size_body, 1]
+            if body_out.dim() == 1:  # 如果模型输出为 [batch_size_body]，则添加维度
+                body_out = body_out.unsqueeze(1)
+            outputs[body_mask] = body_out  # 赋值到 [batch_size, 1]
         
-        return outputs
+        return outputs  # 返回 [batch_size, 1]
+
     
     
 class MyResNetModel(nn.Module):
